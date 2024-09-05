@@ -1,15 +1,16 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Product;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
 public class ProductService {
+
     @Autowired
     private ProductRepository repository;
 
@@ -26,7 +27,7 @@ public class ProductService {
     }
 
     public Product getProductById(int id) {
-        return repository.findById(id).orElse(null);
+        return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
     public Product getProductByName(String name) {
@@ -34,17 +35,17 @@ public class ProductService {
     }
 
     public String deleteProduct(int id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Product not found with id: " + id);
+        }
         repository.deleteById(id);
-        return "product removed !! " + id;
+        return "Product removed with id: " + id;
     }
 
     public Product updateProduct(Product product) {
-        Product existingProduct = repository.findById(product.getId()).orElse(null);
-        existingProduct.setName(product.getName());
-        existingProduct.setQuantity(product.getQuantity());
-        existingProduct.setPrice(product.getPrice());
-        return repository.save(existingProduct);
+        if (!repository.existsById(product.getId())) {
+            throw new ResourceNotFoundException("Product not found with id: " + product.getId());
+        }
+        return repository.save(product);
     }
-
-
 }

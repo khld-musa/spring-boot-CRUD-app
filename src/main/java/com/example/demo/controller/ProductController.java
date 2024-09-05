@@ -2,49 +2,68 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Product;
 import com.example.demo.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
+@RequestMapping("/products")  // Added base path for better organization
+@Validated
 public class ProductController {
 
     @Autowired
     private ProductService service;
 
-    @PostMapping("/addProduct")
-    public Product addProduct(@RequestBody Product product) {
-        return service.saveProduct(product);
+    @PostMapping("/add")
+    public ResponseEntity<Product> addProduct(@Valid @RequestBody Product product) {
+        Product savedProduct = service.saveProduct(product);
+        return ResponseEntity.ok(savedProduct);
     }
 
-    @PostMapping("/addProducts")
-    public List<Product> addProducts(@RequestBody List<Product> products) {
-        return service.saveProducts(products);
+    @PostMapping("/addBulk")
+    public ResponseEntity<List<Product>> addProducts(@Valid @RequestBody List<Product> products) {
+        List<Product> savedProducts = service.saveProducts(products);
+        return ResponseEntity.ok(savedProducts);
     }
 
-    @GetMapping("/products")
-    public List<Product> findAllProducts() {
-        return service.getProducts();
+    @GetMapping
+    public ResponseEntity<List<Product>> findAllProducts() {
+        List<Product> products = service.getProducts();
+        return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/productById/{id}")
-    public Product findProductById(@PathVariable int id) {
-        return service.getProductById(id);
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> findProductById(@PathVariable int id) {
+        Product product = service.getProductById(id);
+        if (product != null) {
+            return ResponseEntity.ok(product);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    @GetMapping("/product/{name}")
-    public Product findProductByName(@PathVariable String name) {
-        return service.getProductByName(name);
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Product> findProductByName(@PathVariable String name) {
+        Product product = service.getProductByName(name);
+        if (product != null) {
+            return ResponseEntity.ok(product);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/update")
-    public Product updateProduct(@RequestBody Product product) {
-        return service.updateProduct(product);
+    public ResponseEntity<Product> updateProduct(@Valid @RequestBody Product product) {
+        Product updatedProduct = service.updateProduct(product);
+        return ResponseEntity.ok(updatedProduct);
     }
 
     @DeleteMapping("/delete/{id}")
-    public String deleteProduct(@PathVariable int id) {
-        return service.deleteProduct(id);
+    public ResponseEntity<String> deleteProduct(@PathVariable int id) {
+        String response = service.deleteProduct(id);
+        return ResponseEntity.ok(response);
     }
 }
